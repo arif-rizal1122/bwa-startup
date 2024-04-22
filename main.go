@@ -1,8 +1,9 @@
 package main
 
 import (
+
 	"github.com/arif-rizal1122/bwa-startup/handler"
-	"github.com/arif-rizal1122/bwa-startup/helper"
+	"github.com/arif-rizal1122/bwa-startup/helper" 
 	"github.com/arif-rizal1122/bwa-startup/user"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
@@ -24,7 +25,8 @@ func main() {
 	router := gin.Default()
 
 	api := router.Group("/api/v1/")
-	api.POST("/users", userHandler.RegisterUser)
+	api.POST("/register", userHandler.RegisterUser)
+	api.POST("/login", userHandler.LoginUser)
 
 	router.Run()
 
