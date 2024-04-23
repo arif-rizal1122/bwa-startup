@@ -11,6 +11,7 @@ import (
 type ServiceUser interface {
 	RegisterUser(input RegisterUserInput) (User, error)
 	LoginUser(input LoginInput) (User, error)
+	IsEmailAvailable(input CheckEmailInput) (bool, error)
 }
 
 
@@ -76,3 +77,26 @@ func (s *serviceUser) LoginUser(input LoginInput) (User, error) {
 
 	return user, nil
 }
+
+
+func (s *serviceUser) IsEmailAvailable(input CheckEmailInput) (bool, error) {
+	// Mengambil email dari input
+	email := input.Email
+
+	// Mencari pengguna berdasarkan email dari repository
+	user, err := s.repository.FindByEmail(email)
+	if err != nil {
+		// Jika terjadi kesalahan saat mencari email, kembalikan false dan error
+		return false, err
+	}
+
+	// Jika user dengan email yang diberikan tidak ditemukan
+	if user.ID == 0 {
+		// Maka email tidak tersedia, kembalikan true dan tidak ada error
+		return true, nil
+	}	
+
+	// Jika email telah digunakan, kembalikan false dan tidak ada error
+	return false, nil
+}
+

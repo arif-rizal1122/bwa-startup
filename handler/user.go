@@ -1,6 +1,7 @@
 package handler
 
 import (
+
 	"net/http"
 
 	"github.com/arif-rizal1122/bwa-startup/helper"
@@ -22,8 +23,6 @@ func NewUserHandler(userService user.ServiceUser) *userHandler {
 func (h *userHandler) RegisterUser(c *gin.Context) {
 	// Ambil input dari user
 	var input user.RegisterUserInput
-
-
 
 	 err := c.ShouldBindJSON(&input)
 	 if err != nil {
@@ -89,10 +88,52 @@ func (h *userHandler) LoginUser(c *gin.Context) {
 	response := helper.APIResponse("login success", http.StatusOK, "success", formater)
 
 	c.JSON(http.StatusOK, response)
-	
+}
 
 
 
+func (h *userHandler) CheckEmailAvailability(c *gin.Context) {
+	// Inisialisasi variabel untuk menampung input email
+	var input user.CheckEmailInput
 
+	// Mengikat JSON dari request ke struct input
+	if err := c.ShouldBindJSON(&input); err != nil {
+		// Jika terjadi kesalahan saat binding JSON, tangani error validasi
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
 
+		// Buat respons API dengan pesan error validasi
+		response := helper.APIResponse("email checking failed", http.StatusUnprocessableEntity, "error", errorMessage)
+
+		// Mengirimkan respons API ke client
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	// Memeriksa ketersediaan email menggunakan service
+	isEmailAvailable, err := h.userService.IsEmailAvailable(input)
+	if err != nil {
+		// Jika terjadi kesalahan saat memeriksa email, tangani error server
+		errorMessage := gin.H{"errors": "server error"}
+		response := helper.APIResponse("email checking failed", http.StatusInternalServerError, "error", errorMessage)
+
+		// Mengirimkan respons API ke client
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
+
+	// Menyiapkan data respons
+	data := gin.H{
+		"is_available": isEmailAvailable,
+	}
+
+	// Menentukan pesan meta berdasarkan ketersediaan email
+	metaMessage := "email has been registered"
+	if isEmailAvailable {
+		metaMessage = "email is available"
+	}
+
+	// Buat respons API dengan pesan meta yang sudah ditentukan
+	response := helper.APIResponse(metaMessage, http.StatusOK, "success", data)
+	c.JSON(http.StatusOK, response)
 }
