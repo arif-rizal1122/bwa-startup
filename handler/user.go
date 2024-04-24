@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/arif-rizal1122/bwa-startup/auth"
 	"github.com/arif-rizal1122/bwa-startup/helper"
 	"github.com/arif-rizal1122/bwa-startup/user"
 	"github.com/gin-gonic/gin"
@@ -11,10 +12,14 @@ import (
 
 type userHandler struct {
 	userService user.ServiceUser
+	authService auth.Service
 }
 
-func NewUserHandler(userService user.ServiceUser) *userHandler {
-	return &userHandler{userService: userService}
+func NewUserHandler(userService user.ServiceUser, authService auth.Service) *userHandler {
+	return &userHandler{
+		userService: userService,
+		authService: authService,
+	}
 }
 
 
@@ -44,9 +49,14 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 
 
 
-	// token nanti yh
+	token, err := h.authService.GenerateToken(user.ID)
+	if err != nil {
+		response := helper.APIResponse("account register failed", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
 
-	formater := helper.FormatUser(user, "")
+	formater := helper.FormatUser(user, token)
 	response := helper.APIResponse("account has been registered", http.StatusOK, "success", formater)
 
 	c.JSON(http.StatusOK, response)
@@ -55,12 +65,6 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 
 
 func (h *userHandler) LoginUser(c *gin.Context) {
-	// user memasukan input (email dan password)
-	// input ditangkap handler
-	// mapping dari input user ke input struct
-	// input struct passing ke service
-	// di service mencari dgn bantuan repository user dengan email x'
-	// mencocokan password
 	var input user.LoginInput
 
 	err := c.ShouldBindJSON(&input)
@@ -82,8 +86,13 @@ func (h *userHandler) LoginUser(c *gin.Context) {
 		return
 	}
 
-
-	formater := helper.FormatUser(logginUser, "")
+	token, err := h.authService.GenerateToken(logginUser.ID)
+	formater := helper.FormatUser(logginUser, token)
+	if err != nil {
+		response := helper.APIResponse("account login failed", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
 
 	response := helper.APIResponse("login success", http.StatusOK, "success", formater)
 
