@@ -1,7 +1,7 @@
 package main
 
 import (
-	
+
 	"github.com/arif-rizal1122/bwa-startup/auth"
 	"github.com/arif-rizal1122/bwa-startup/handler"
 	"github.com/arif-rizal1122/bwa-startup/helper"
@@ -23,11 +23,11 @@ func main() {
 	userService    := user.NewServiceUser(userRepository)
 	authService := auth.NewJWTservice()
 
-	userHandler := handler.NewUserHandler(userService, authService)
 
+	userHandler := handler.NewUserHandler(userService, authService)
 	router := gin.Default()
 
-	api := router.Group("/api/v1/")
+	api := router.Group("/api/v1/")  
 	api.POST("/register", userHandler.RegisterUser)
 	api.POST("/login", userHandler.LoginUser)
 	api.POST("/email_checker", userHandler.CheckEmailAvailability)
