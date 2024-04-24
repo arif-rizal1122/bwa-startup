@@ -12,6 +12,8 @@ type ServiceUser interface {
 	RegisterUser(input RegisterUserInput) (User, error)
 	LoginUser(input LoginInput) (User, error)
 	IsEmailAvailable(input CheckEmailInput) (bool, error)
+	SaveAvatar(ID int, fileLocation string) (User, error)
+	
 }
 
 
@@ -98,5 +100,28 @@ func (s *serviceUser) IsEmailAvailable(input CheckEmailInput) (bool, error) {
 
 	// Jika email telah digunakan, kembalikan false dan tidak ada error
 	return false, nil
+}
+
+
+
+func (s *serviceUser) SaveAvatar(ID int, fileLocation string) (User, error) {
+	// dapatkan users berdasarkan id
+	// user update atributes avatar filename
+	// simapan perubahan avatar filename
+
+	user, err := s.repository.FindByID(ID)
+	if err != nil {
+		return user, err
+	}
+
+	user.AvatarFileName = fileLocation
+	updateuser, err := s.repository.Upadate(user)
+	if err != nil {
+		return user, err
+	}
+
+	return updateuser, nil
+
+
 }
 
