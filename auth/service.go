@@ -43,6 +43,9 @@ func (s *jwtService) GenerateToken(userID int) (string, error) {
 	return signedToken, nil
 }
 
+
+
+
 // ValidateToken adalah method untuk memvalidasi token JWT.
 func (s *jwtService) ValidationToken(token string) (*jwt.Token, error) {
 	// Parse token dan validasi menggunakan fungsi closure.

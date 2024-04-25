@@ -151,12 +151,6 @@ func (h *userHandler) CheckEmailAvailability(c *gin.Context) {
 
 
 func (h *userHandler) UploadAvatar(c *gin.Context) {
-	// tangkap input dari user
-	// simpan gambarnya di folder "images/"
-	// di service kita panggil repo
-	// jwt (sementara hardcode dulu)
-	// repo ambil data user yg ID
-	// repo update data user simpan lokasi file
 
 	file, err := c.FormFile("avatar")
 	if err != nil {
@@ -167,9 +161,8 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 		return
 	}
 
-	
-
-	userID := 76
+	currentUser := c.MustGet("currentUser").(user.User)
+	userID := currentUser.ID
 	path := fmt.Sprintf("images/%d-%s", userID, file.Filename)
 
 	err = c.SaveUploadedFile(file, path)
@@ -181,7 +174,6 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 		return
 	}
 
-
 	_, err = h.userService.SaveAvatar(userID, path)
 	if err != nil {
 		data := gin.H{"is_uploaded": false}
@@ -191,9 +183,7 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 		return
 	}
 	
-
 	data := gin.H{"is_uploaded": true}
-
 	response := helper.APIResponse("avatar successfully uploaded", http.StatusOK, "errors", data)
 	c.JSON(http.StatusOK, response)
 

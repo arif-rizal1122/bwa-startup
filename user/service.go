@@ -13,7 +13,7 @@ type ServiceUser interface {
 	LoginUser(input LoginInput) (User, error)
 	IsEmailAvailable(input CheckEmailInput) (bool, error)
 	SaveAvatar(ID int, fileLocation string) (User, error)
-	
+	GetUserByID(ID int) (User, error)
 }
 
 
@@ -125,3 +125,17 @@ func (s *serviceUser) SaveAvatar(ID int, fileLocation string) (User, error) {
 
 }
 
+
+
+func (s *serviceUser) GetUserByID(ID int) (User, error) {
+	user, err := s.repository.FindByID(ID)
+	if err != nil {
+		return user, nil
+	}
+
+	if user.ID == 0 {
+		return user, errors.New("no user found on that Id")
+	}
+
+	return user, nil  
+}

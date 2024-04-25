@@ -1,11 +1,14 @@
 package main
 
 import (
+	"net/http"
+	"strings"
 
 	"github.com/arif-rizal1122/bwa-startup/auth"
 	"github.com/arif-rizal1122/bwa-startup/handler"
 	"github.com/arif-rizal1122/bwa-startup/helper"
 	"github.com/arif-rizal1122/bwa-startup/user"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -31,7 +34,7 @@ func main() {
 	api.POST("/register", userHandler.RegisterUser)
 	api.POST("/login", userHandler.LoginUser)
 	api.POST("/email_checker", userHandler.CheckEmailAvailability)
-	api.POST("/avatars", userHandler.UploadAvatar)
+	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar)
 	
 
 	router.Run()
@@ -42,9 +45,49 @@ func main() {
 
 
 
+func authMiddleware(authService auth.Service, userService user.ServiceUser) gin.HandlerFunc {
+	return func (c *gin.Context)  {
+		authHeader := c.GetHeader("Authorization")
+	
+		if !strings.Contains(authHeader, "Bearer") {
+			response := helper.APIResponse("unathorized", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+			return 
+		}
+	
+		// bearer token
+		tokenString := " "
+		arrayToken := strings.Split(authHeader, " ")
+		// dikasih dua karena ada 2 nilai nanti yaitu bearer[0] dan token[1]
+		if len(arrayToken) == 2 {
+			tokenString = arrayToken[1]
+		}
+	
+		// disini cek dengan token
+		token, err := authService.ValidationToken(tokenString)
+		if err != nil {
+			response := helper.APIResponse("unathorized", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+			return 
+		}
 
-// input dari user
-// handler mapping input user menjadi struct input
-// service melakukan mapping dari struct Input ke struct user
-// repository save 
-// db
+		claim, ok := token.Claims.(jwt.MapClaims)
+
+		if !ok || !token.Valid {
+			response := helper.APIResponse("unathorized", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+			return 
+		}
+
+		userID := int(claim["user_id"].(float64))
+		user, err := userService.GetUserByID(userID)
+		if err != nil {
+			response := helper.APIResponse("unathorized", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+			return 
+		}
+
+		c.Set("currentUser", user)
+	}
+}
+
