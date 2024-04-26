@@ -87,6 +87,7 @@ func (h *userHandler) LoginUser(c *gin.Context) {
 	}
 
 	token, err := h.authService.GenerateToken(logginUser.ID)
+	
 	formater := helper.FormatUser(logginUser, token)
 	if err != nil {
 		response := helper.APIResponse("account login failed", http.StatusBadRequest, "error", nil)
@@ -163,6 +164,7 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 
 	currentUser := c.MustGet("currentUser").(user.User)
 	userID := currentUser.ID
+
 	path := fmt.Sprintf("images/%d-%s", userID, file.Filename)
 
 	err = c.SaveUploadedFile(file, path)

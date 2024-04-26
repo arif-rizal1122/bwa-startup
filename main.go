@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/arif-rizal1122/bwa-startup/auth"
+	"github.com/arif-rizal1122/bwa-startup/campaign"
 	"github.com/arif-rizal1122/bwa-startup/handler"
 	"github.com/arif-rizal1122/bwa-startup/helper"
 	"github.com/arif-rizal1122/bwa-startup/user"
@@ -21,15 +23,34 @@ func main() {
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	helper.IfError(err)
 
-	//
+	// users
 	userRepository := user.NewRepositoryUser(db)
 	userService    := user.NewServiceUser(userRepository)
 	authService := auth.NewJWTservice()
-
-
 	userHandler := handler.NewUserHandler(userService, authService)
-	router := gin.Default()
+	// users handler
 
+	// campaigns
+	campaignRepository := campaign.NewRepository(db)
+    campaigns, _ := campaignRepository.FindByUserID(79)
+
+	
+	fmt.Println("debug")
+	fmt.Println("debug")
+	fmt.Println("debug")
+	fmt.Println(len(campaigns))
+	for _, campaign := range campaigns{
+		fmt.Println(campaign.Name)
+		if len(campaign.CampaignImages) > 0 {
+			fmt.Println(campaign.CampaignImages[0].FileName)			
+		}
+
+	}
+
+	
+	 
+
+	router := gin.Default()
 	api := router.Group("/api/v1/")  
 	api.POST("/register", userHandler.RegisterUser)
 	api.POST("/login", userHandler.LoginUser)
@@ -37,9 +58,9 @@ func main() {
 	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar)
 	
 
+
+
 	router.Run()
-
-
 }
 
 
