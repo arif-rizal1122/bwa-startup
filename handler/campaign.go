@@ -9,8 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-
 type campaignHandler struct {
 	// fields here
 	service campaign.Service
@@ -18,7 +16,7 @@ type campaignHandler struct {
 
 
 func NewCampaignHandler(service campaign.Service) *campaignHandler {
-	return &campaignHandler{service}
+	return &campaignHandler{service: service}
 }
 
 
@@ -26,11 +24,10 @@ func NewCampaignHandler(service campaign.Service) *campaignHandler {
 func (h *campaignHandler) GetCampaigns(c *gin.Context) {
 	// Ambil nilai user_id dari query string
 	userIDStr := c.Query("user_id")
-
 	// Validasi apakah userIDStr adalah bilangan bulat
 	userID, err := strconv.Atoi(userIDStr)
-	if err != nil {
-		// Jika userIDStr bukan bilangan bulat, kembalikan respons 400 Bad Request
+	if err != nil || userID == 0 {
+		// Jika userIDStr tidak valid atau nilainya adalah 0, kembalikan respons 400 Bad Request
 		response := helper.APIResponse("Invalid user_id", http.StatusBadRequest, "error", nil)
 		c.JSON(http.StatusBadRequest, response)
 		return
@@ -44,6 +41,6 @@ func (h *campaignHandler) GetCampaigns(c *gin.Context) {
 		return
 	}
 
-	response := helper.APIResponse("Success get campaigns", http.StatusOK, "success", campaigns)
+	response := helper.APIResponse("shows list campaigns", http.StatusOK, "success", campaign.FormatCampaigns(campaigns))
 	c.JSON(http.StatusOK, response)
 }
