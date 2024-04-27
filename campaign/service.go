@@ -1,7 +1,7 @@
 package campaign
 
 type Service interface {
-	FindCampaings(userID int) ([]Campaign, error)
+	GetCampaings(userID int) ([]Campaign, error)
 
 }
 
@@ -16,7 +16,7 @@ func NewService (repository Repository) *service {
 
 
 
-func (s *service) FindCampaings(userID int) ([]Campaign, error) {
+func (s *service) GetCampaings(userID int) ([]Campaign, error) {
 	// kalau userID ada
 	if userID != 0 {
 		campaigns, err := s.repository.FindByUserID(userID)
@@ -28,6 +28,7 @@ func (s *service) FindCampaings(userID int) ([]Campaign, error) {
 
 	// kalau tidak ada userID
 	compaigns, err := s.repository.FindAll()
+	
 	if err != nil {
 		return compaigns, err
 	}

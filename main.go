@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -32,10 +31,9 @@ func main() {
 
 	// campaigns
 	campaignRepository := campaign.NewRepository(db)
-    campaignService    := campaign.NewService(campaignRepository)
+    campaignService := campaign.NewService(campaignRepository)
+	campaignHandler := handler.NewCampaignHandler(campaignService)   
 
-	camp, _ := campaignService.FindCampaings(0)
-	fmt.Println(len(camp)) 
 
 	router := gin.Default()
 	api := router.Group("/api/v1/")  
@@ -44,7 +42,7 @@ func main() {
 	api.POST("/email_checker", userHandler.CheckEmailAvailability)
 	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar)
 	
-
+	api.GET("/campaigns", campaignHandler.GetCampaigns)
 
 
 	router.Run()
