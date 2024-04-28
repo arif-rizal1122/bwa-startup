@@ -20,14 +20,13 @@ func NewCampaignHandler(service campaign.Service) *campaignHandler {
 }
 
 
-// GetCampaigns handler
+
 func (h *campaignHandler) GetCampaigns(c *gin.Context) {
 	// Ambil nilai user_id dari query string
 	userIDStr := c.Query("user_id")
 	// Validasi apakah userIDStr adalah bilangan bulat
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil || userID == 0 {
-		// Jika userIDStr tidak valid atau nilainya adalah 0, kembalikan respons 400 Bad Request
 		response := helper.APIResponse("Invalid user_id", http.StatusBadRequest, "error", nil)
 		c.JSON(http.StatusBadRequest, response)
 		return
