@@ -6,10 +6,11 @@ import (
 )
 
 type Repository interface {
-	// []campaign, mengembalikan lebih dari satu data camapign di db
+	// []campaign, mengembalikan lebih dari satu data camapign di db 
 	FindAll() ([]Campaign, error)
 	FindByUserID(ID int) ([]Campaign, error)
 	FindByCampaignID(ID int) (Campaign, error)
+	Save(campaign Campaign) (Campaign, error)
 }
 
 type repository struct {
@@ -28,7 +29,7 @@ func NewRepository(db *gorm.DB) *repository {
 
 func (r *repository) FindAll() ([]Campaign, error) {
 	var campaigns []Campaign
-	err := r.db.Preload("CampaignImages", "campaign_images.is_primary = 1").Find(&campaigns).Error
+	err := r.db.Preload("CampaignImages").Find(&campaigns).Error
 	if err != nil {
 		return campaigns, err
 	}
@@ -63,3 +64,15 @@ func (r repository) FindByCampaignID(ID int) (Campaign, error) {
 
 	return campaign, nil
 }
+
+
+
+func (r *repository) Save(campaign Campaign) (Campaign, error) {
+	err := r.db.Create(&campaign).Error
+	if err != nil {
+		return campaign, err
+	}
+
+	return campaign, nil
+}
+
